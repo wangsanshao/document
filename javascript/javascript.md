@@ -5,7 +5,7 @@ javascript是一门动态的，弱类型的编程语言
 
 #### 数据类型
 ##### 基本数据类型 储存在栈内存中
-undefined, null, boolean, string number, symbol, bignit
+undefined, null, boolean, string, number, symbol, bignit
 ##### 引用类型 储存在堆内存中
 object
 ##### 基本数据类型和引用类型的区别
