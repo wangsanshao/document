@@ -48,13 +48,17 @@ pureComponentPrototype.isPureReactComponent = true;
 ```
 #### 解释说明
 
-1、定义了PureComponent基类。
-2、定义了ComponentDummy,并且让ComponentDummy的原型指向Component的原型，其实就相当于让ComponentDummy继承了Component，CommponentDummy的原型方法也就继承了Component的原型方法。但是ComponentDummy没有自己的方法。
-3、定义了变量pureComponentPrototype，并且让pureComponent.Prototype的指向ComponentDummy，其实就相当于让pureComponentPrototype继承了ComponentDummy，pureComponentPrototype的原型方法也就继承了ComponentDummy的原型方法。
-4、pureComponentPrototype.constructor = PureComponent，将pureComponentPrototype的构造函数指向PureComponent,当我们创建了 new ComponentDummy() 实例时，它的 constructor 默认指向了 Component（因为继承了 Component.prototype）
-但实际上，我们希望 PureComponent 的实例的 constructor 应该指向 PureComponent 而不是 Component
-5、assign(pureComponentPrototype, Component.prototype)，将Component的原型方法添加到pureComponentPrototype中。
-6、pureComponentPrototype.isPureReactComponent = true，给pureComponentPrototype添加isPureReactComponent属性，值为true
+1. 定义了PureComponent基类。
+
+2. 定义了ComponentDummy，并且让ComponentDummy的原型指向Component的原型，其实就相当于让ComponentDummy继承了Component，CommponentDummy的原型方法也就继承了Component的原型方法。但是ComponentDummy没有自己的方法。
+
+3. 定义了变量pureComponentPrototype，并且让pureComponent.Prototype的指向ComponentDummy，其实就相当于让pureComponentPrototype继承了ComponentDummy，pureComponentPrototype的原型方法也就继承了ComponentDummy的原型方法。
+
+4. pureComponentPrototype.constructor = PureComponent，将pureComponentPrototype的构造函数指向PureComponent。当我们创建了 new ComponentDummy() 实例时，它的 constructor 默认指向了 Component（因为继承了 Component.prototype），但实际上，我们希望 PureComponent 的实例的 constructor 应该指向 PureComponent 而不是 Component。
+
+5. assign(pureComponentPrototype, Component.prototype)，将Component的原型方法添加到pureComponentPrototype中。
+
+6. pureComponentPrototype.isPureReactComponent = true，给pureComponentPrototype添加isPureReactComponent属性，值为true。
 ```javascript
 export {Component, PureComponent};
 ```
