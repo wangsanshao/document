@@ -1,4 +1,4 @@
-## Component
+## ReactBaseClasses
 
 ### 核心代码 [文件地址](https://github.com/facebook/react/blob/main/packages/react/src/ReactBaseClasses.js)
 ```javascript
