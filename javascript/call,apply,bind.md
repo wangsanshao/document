@@ -11,7 +11,8 @@ var a = {
 }
 var b = a.getX
 b(2) // undefined
-var c = b.bind(a) // 1 b的this指向a
+var c = b.bind(a) // b的this指向a
+c() // 1
 ```
 #### 实现一个bind
 
