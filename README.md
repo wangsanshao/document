@@ -183,13 +183,28 @@ flex-basis: 0%;  /* 元素的初始大小为 0 */
 - 页面交互
 - 关闭连接
 18、手写防抖和节流
-```
+```javascript
+// 防抖 取最后一次
 const debounce = () => {
-
+  let timer = null
+  return function() {
+    if(timer) { clearTimeout(timer) }
+    timer = setTimeout(() => {
+      fn.apply(this, arguments)
+    }, delay)
+  }
 }
 
+// 节流 取第一次
 const throttle = () => {
-
+  let timer = null
+  return function() {
+    if(timer) { return }
+    timer = setTimeout(() => {
+      fn.apply(this, arguments)
+      timer = null
+    }, delay)
+  }
 }
 ```
 19、vue-lazyloader原理
@@ -197,15 +212,220 @@ const throttle = () => {
 21、浏览器的事件循环和 nodejs 事件循环的区别
 22、express 的设计原理
 23、vue-router原理
+  - history 底层事件pushState popState
+  - hash 底层事件hashchange
 24、手写promise
 25、手写promise.all
+```javascript
+const PromiseAll = async(array) => {
+
+}
+```
 26、手写Vue的mixin方法
 27、怎么判断一个点是否在圆形内、正方形内
+圆形
+```javascript 根据勾股定理，a**2 + b**2 = c**2
+const isInCircle = (x, y, circle) => {
+  // 解构circle对象，获取圆心的x坐标、y坐标和半径
+  const { x: cx, y: cy, r } = circle
+  // 计算点(x, y)到圆心的距离
+  const distance = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2)
+  // 如果距离小于或等于半径，则点在圆内
+  return distance <= r
+}
+```
+正方形
+```javascript
+const isInSquare = (x, y, square) => {
+  const { x: sx, y: sy, w, h } = square
+  return x >= sx && x <= sx + w && y >= sy && y <= sy + h
+}
+```
 28、css 选择器的优先级
+!important > 行内样式 > id选择器 > 类选择器 > 标签选择器 > 通配符选择器 > 继承 > 浏览器默认样式
 29、实现一个发布订阅
+```javascript
+class PunSub {
+  constructor() {
+    this.events = new Map()
+    this.idCounts = 0
+  }
+
+  subscribe(eventName, callback) {
+    if(typeof callback !== 'function') {
+      throw new Error('callback must be a function')
+    }
+
+    const id = this.idCounts++
+    if( !this.events.has(eventName) ) {
+      this.events.set(eventName, new Map())
+    }
+
+    this.events.get(eventName).set(id, callback)
+    return {
+      unsubscribe: () => this._unsubscribe(eventName, id)
+    }
+  }
+  
+  publish(eventName, data) {
+    const subscription = thus.events.get(eventName);
+    if(subscription) {
+      subscription.forEach((callback, id) => {
+        try {
+          callback(data)
+        } catch(error) {
+          console.error(`Error in callback ${id} for event ${eventName}:`, error)
+        }
+      })
+    }
+  }
+
+  subscribeOnce(eventName, callback) {
+    const subscription = this.subscribe(eventName, (data) => {
+      callback(data)
+      subscription.unsubscribe()
+    })
+    return subscription
+  }
+
+  _unsubscribe(eventName, id) {
+    const subscription = this.events.get(eventName)
+    if(subscription) {
+      subscription.delete(id)
+      if(subscription.size === 0) {
+        this.events.delete(eventName)
+      }
+    }
+  }
+
+  clearAll() {
+    this.events.clear()
+  }
+
+  getSubscriptionCount(eventName) {
+    if(eventName) {
+      return this.events.has(eventName) ? this.events.get(eventName).size : 0
+    }
+    return Array.from(this.events.values()).reduce((acc, curr) => acc + curr.size, 0)
+  }
+}
+
+```
 30、手写bind
+```javascript
+Function.prototype.myBind = function(context, ...args) {
+  const originalFunc = this
+
+  return function(...newArgs) {
+    const combinedArgs = args.concat(newArgs)
+    const result = originalFunc.apply(context, combinedArgs)
+    return result
+  }
+}
+```
 31、手写call
+```javascript
+Function.prototype.myCall = function(context, ...args) {
+  // 1. 处理 undefined 和 null 的上下文
+  context = context || window; // 浏览器环境用 window，Node.js 需改为 globalThis
+  // 2. 创建唯一键避免属性覆盖
+  const fnKey = Symbol('__tempFn__');
+  // 3. 将当前函数绑定到上下文
+  context[fnKey] = this; // this 指向原函数
+  // 4. 执行函数并保存结果
+  const result = context[fnKey](...args);
+  // 5. 清理临时属性
+  delete context[fnKey];
+  // 6. 返回执行结果
+  return result;
+};
+```
 32、手写apply
-33、手写new 关键字
+```javascript
+Function.prototype.myApply = function(context, argsArray) {
+  // 类型安全检查
+  if (typeof this !== 'function') {
+    throw new TypeError('调用者必须是函数');
+  }
+  // 处理上下文
+  context = context != null ? Object(context) : window;
+  // 创建唯一键
+  const fnKey = Symbol('fn');
+  // 绑定函数
+  context[fnKey] = this;
+  // 参数处理
+  let result;
+  if (!argsArray) {
+    result = context[fnKey]();
+  } else {
+    if (!Array.isArray(argsArray) && !isArrayLike(argsArray)) {
+      throw new TypeError('第二个参数必须为数组或类数组');
+    }
+    result = context[fnKey](...Array.from(argsArray));
+  }
+  // 清理
+  delete context[fnKey];
+  return result;
+};
+```
+33、手写new **关键字**
+```javascript
+const newInstance = (fn, ...args) => {
+  const obj = Object.create(fn.prototype) // 创建一个新对象，继承构造函数的原型
+  const res = fn.apply(obj, args) // 将构造函数的this指向新创建的对象，并传入参数
+  return res instanceof Object ? res : obj // 如果构造函数返回的是一个对象，则返回该对象，否则返回新创建的对象
+}
+```
 34、react-fiber
-35、
+react15 渲染是同步不可中断的
+react16 渲染是异步的可中断的
+35、深度优先遍历和广度优先遍历
+36、setTimeout 模拟setInterval
+```javascript
+const setInter = (fn, time) => {
+  let running = true
+  let timer = null
+  const loop = () => {
+    if(timer) { clearTimeout(timer) }
+    if(!running) return
+    fn()
+    timer = setTimeout(loop, time)
+  }
+  loop()
+  return {
+    stop: () => {
+      running = false
+      clearTimeout(timer)
+    }
+  }
+}
+```
+38、判断数据类型
+```javascript
+typeof 可以判断number, string, boolean, undefined, symbol, function, object
+instanceof 可以判断对象类型
+Object.prototype.toString.call(value).slice(8, -1) 可以判断所有类型
+const getType = (value) => {
+  return Object.prototype.toString.call(value).slice(8, -1)
+}
+```
+39、实现一个深拷贝
+```javascript
+const deepClone = (obj) => {
+  if(typeof obj !== 'object' || obj === null) {
+    return obj
+  }
+
+  const result = Array.isArray(obj) ? [] : {}
+  for(const key in obj) {
+    if(obj.hasOwnProperty(key)) {
+      result[key] = deepClone(obj[key])
+    }
+  }
+  return result
+}
+```
+40、http2和http1的区别
+http1 是请求和响应都是文本格式传输，且是顺序处理，每个连接只能处理一个请求和响应，虽然可以使用keep-alive来复用连接，但是不能解决队头阻塞的问题。每次请求和响应都是携带完整的HTTP头部，重复传输相同信息，如User-Agent,cookie等，浪费带宽。
+http2 数据是二进制传输，解析效率更高，单个TCP连接可以并发处理多个请求和响应，使用HPACK压缩头部，减少带宽占用。
+
