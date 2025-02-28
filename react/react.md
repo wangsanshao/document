@@ -1,17 +1,23 @@
 ## React
 
 ### React 版本历史
+#### React 19 (2023.10)
+- 引入了新的并发渲染机制，提高了应用程序的响应速度和性能
+- 提供了更好的服务器端渲染支持，包括对流式服务器端渲染的支持
+- 引入了新的API，例如useId和useSyncExternalStore，用于简化状态管理和数据同步
+- 改进了错误边界处理，提供了更好的错误报告和调试体验
+- 优化了React DevTools，提供了更好的开发体验
 
 #### React 18 (2022.3)
 - 新的并发渲染机制(Concurrent Rendering)
 - 自动批处理(Automatic Batching)
 - 新的 Suspense SSR 架构
 - 新的客户端和服务端渲染 APIs
-  - createRoot
-  - hydrateRoot
-  - startTransition
-  - useTransition
-  - useDeferredValue
+  - createRoot 作用是创建一个根节点，用于渲染React应用
+  - hydrateRoot 作用是水合（hydrate）一个已经存在的DOM，使其成为React应用的一部分
+  - startTransition 作用是开始一个过渡，用于优化性能
+  - useTransition 作用是用于管理过渡状态
+  - useDeferredValue 作用是用于延迟更新，以提高性能
 - [React 18 发布公告](https://react.dev/blog/2022/03/29/react-v18)
 
 #### React 17 (2020.10)
