@@ -259,7 +259,7 @@ const isInSquare = (x, y, square) => {
 !important > 行内样式 > id选择器 > 类选择器 > 标签选择器 > 通配符选择器 > 继承 > 浏览器默认样式
 ## 29、实现一个发布订阅
 ```javascript
-class PunSub {
+class PubSub {
   constructor() {
     this.events = new Map()
     this.idCounts = 0
@@ -393,6 +393,16 @@ const newInstance = (fn, ...args) => {
 ## 34、react-fiber
 react15 渲染是同步不可中断的
 react16 渲染是异步的可中断的
+React Fiber 是 React 16 引入的核心架构革新，旨在解决旧版本（如 React 15）因同步渲染机制导致的性能瓶颈和交互卡顿问题。在 React 15 中，协调器（Reconciler）通过递归方式同步构建和对比虚拟 DOM 树，若遇到复杂组件或大规模 DOM 更新，JS 线程会长时间阻塞主线程，导致 GUI 渲染线程无法及时响应用户操作（如点击、滚动），造成界面卡顿甚至丢帧，严重影响用户体验。
+
+Fiber 架构通过三大核心改进优化了这一过程：
+
+任务切片与可中断调度：将虚拟 DOM 拆解为独立的 Fiber 节点链表结构，代替原有树形递归遍历。每个 Fiber 节点对应一个可中断的异步任务单元，利用浏览器空闲时段（通过调度器模拟 requestIdleCallback）分片执行，避免长时间占用主线程。
+
+优先级调度：内置调度器（Scheduler）动态管理任务优先级（如用户交互触发的更新优先于数据请求），确保高优先级任务快速响应，提升交互流畅度。
+
+增量渲染与双缓存：协调器（Reconciler）增量构建 Fiber 树并标记变更，完成后由渲染器（Renderer）按需批量更新真实 DOM，减少布局计算和重绘次数。同时采用双缓存机制，内存中维护新旧两棵 Fiber 树，实现无缝切换与回滚，支持并发模式下的状态一致性。
+通过上述机制，Fiber 架构使 React 能够实现异步可中断的渲染流程，在复杂场景下保持界面高响应性，兼顾性能与用户体验，为后续并发模式（Concurrent Mode）和渐进式渲染奠定了基石。
 
 ## 35、深度优先遍历和广度优先遍历
 
@@ -444,14 +454,18 @@ const deepClone = (obj) => {
 ## 40、http2和http1的区别
 http1 是请求和响应都是文本格式传输，且是顺序处理，每个连接只能处理一个请求和响应，虽然可以使用keep-alive来复用连接，但是不能解决队头阻塞的问题。每次请求和响应都是携带完整的HTTP头部，重复传输相同信息，如User-Agent,cookie等，浪费带宽。
 http2 数据是二进制传输，解析效率更高，单个TCP连接可以并发处理多个请求和响应，使用HPACK压缩头部，减少带宽占用。
+
 ## 41、xss攻击
 xss攻击是跨站脚本攻击，攻击者通过在网页中注入恶意脚本，在用户浏览网页时执行恶意脚本，从而达到攻击目的。
+
 ## 42、csrf攻击
 csrf攻击是跨站请求伪造，攻击者通过伪造用户请求，向目标网站发送恶意请求，从而达到攻击目的。
+
 ## 43、CSRF攻击的防御
 - 验证码
 - 使用CSRF Token
 - 检查Referer
+  
 ## 44、vue的响应式原理
 vue2 使用Object.defineProperty 劫持对象属性，当属性发生变化时，触发对应的回调函数。但是不能监听数组的变化，需要使用重写数组的方法来监听数组的变化。还有不能监听对象的添加和删除。嵌套数组和对象需要深度遍历。
 vue3 使用Proxy 劫持对象，当对象的属性发生变化时，触发对应的回调函数。
@@ -672,4 +686,235 @@ data() {
 - **可预测性**：避免隐式共享状态带来的副作用
 - **生命周期管理**：通过函数调用时机控制数据初始化
 
-## 56、
+## 56、继承
+### 原型链继承
+```javascript
+function Parent() {
+  this.name = 'parent';
+  this.colors = ['red', 'blue'];
+}
+
+Parent.prototype.say = function() {
+  console.log('hello');
+}
+
+function Child() {}
+Child.prototype = Object.create(Parent.prototype); // 直接使用父类实例作为子类原型
+Child.prototype.constructor = Child;
+```
+### 组合继承
+```javascript
+function Parent(name) {
+  this.name = name;
+  this.colors = ['red', 'blue'];
+}
+
+Parent.prototype.say = function() {
+  console.log('hello');
+}
+
+function Child(name, age) {
+  Parent.call(this, name); // 第一次调用父类构造函数
+  this.age = age;
+}
+
+Child.prototype = new Parent(); // 第二次调用父类构造函数
+Child.prototype.constructor = Child;
+```
+### 寄生组合继承
+```javascript 
+function Parent(name) {
+  this.name = name;
+  this.colors = ['red', 'blue'];
+}
+
+Parent.prototype.say = function() {
+  console.log('hello');
+}
+
+function Child(name, age) {
+  Parent.call(this, name); // 继承属性
+  this.age = age;
+}
+
+// 继承原型
+Child.prototype = Object.create(Parent.prototype);
+Child.prototype.constructor = Child;
+
+// 子类可以添加自己的方法
+Child.prototype.play = function() {
+  console.log('playing');
+};
+```
+
+### 类继承
+```javascript
+class Parent {
+  constructor(name) {
+    this.name = name;
+    this.colors = ['red', 'blue'];
+  }
+  
+  say() {
+    console.log('hello');
+  }
+}
+
+class Child extends Parent {
+  constructor(name, age) {
+    super(name); // 必须先调用super
+    this.age = age;
+  }
+  
+  play() {
+    console.log('playing');
+  }
+}
+```
+## 57、浏览器渲染的线程都有哪些
+- 主线程
+  - 负责解析HTML、CSS、JavaScript
+- 合成线程
+  - 负责将页面分成多个图层，进行图层合成
+- 光栅化线程
+  - 负责将图层转换为位图，通常由GPU加速
+- JavaScript引擎线程
+  - 负责解析和执行JavaScript代码
+- 事件处理线程
+  - 负责处理事件循环，将事件分发给主线程或其他线程处理。
+- 定时器线程
+  - 负责处理定时器，如setTimeout、setInterval
+- 网络请求线程
+  - 负责处理网络请求，如XMLHttpRequest、fetch
+- WebWorker线程
+  -允许在后台运行JavaScript代码，不阻塞主线程。
+- serviceWorker线程
+  - 用于实现离线缓存、推送通知等功能，独立于主线程运行。
+- GPU线程
+  - 负责处理GPU相关任务，如3D渲染、视频解码等。
+## 58、避免react重复渲染的手段
+- 使用React.memo() 包裹组件，缓存组件渲染结果
+- 使用useMemo() 缓存复杂计算结果
+- 使用useCallback() 缓存函数引用
+- 使用useRef() 创建不变的引用对象
+- 使用React.Fragment 包裹组件，避免额外DOM节点
+- 使用React.StrictMode 包裹组件，检查潜在问题
+## 59、单例模式
+``` javascript
+//全局变量
+let singleInstance
+function Person() {
+  if(!singleInstance) {
+    singleInstance = this
+  }
+  return singleInstance
+}
+const p1 = new Person()
+const p2 = new Person()
+console.log(p1 === p2) // true
+```
+``` javascript
+// 静态方法
+function Person() {}
+Person.getInstance = function() {
+  if(!Person.instance) {
+    Person.instance = new Person()
+  }
+  return Person.instance
+}
+const p1 = Person.getInstance()
+const p2 = Person.getInstance()
+console.log(p1 === p2) // true
+```
+``` javascript
+// 闭包
+const Singleton = (function() {
+  let instance = null
+  function createInstance() {
+    this.data = '111'
+  }
+  return function() {
+    if(!instance) {
+      instance = createInstance()
+    }
+    return instance
+  }
+})()
+const p1 = Singleton()
+const p2 = Singleton()
+console.log(p1 === p2) // true
+```
+## 60、Promise
+Promise.all() // 并发执行多个Promise，返回一个Promise，所有Promise都成功时返回成功结果，有一个失败则返回失败结果
+Promise.allSettled() // 并发执行多个Promise，返回一个Promise，所有Promise都成功或失败时返回成功或失败结果
+Promise.any() // 并发执行多个Promise，返回一个Promise，只要有一个Promise成功则返回成功结果，所有Promise都失败则返回失败结果
+Promise.race() // 并发执行多个Promise，返回一个Promise，只要有一个Promise成功或失败则返回成功或失败结果
+Promise.resolve() // 返回一个成功的Promise
+Promise.reject() // 返回一个失败的Promise
+
+## 61、常见的性能优化的手段有哪些
+代码压缩，代码分割，图片压缩，图片懒加载，路由懒加载，SSR/SSG，Web Worker，防抖节流，Web Worker处理密集计算，避免内存泄漏，合理的组件拆分，响应式数据优化，使用SSR/SSG，ESBuild/SWC加速构建，并行构建，增量构建，性能指标监控，错误监控，用户行为分析，性能预算，CI/CD中的性能检测，A/B测试验证
+### 1. 网络优化
+1. **资源压缩与合并**
+   - 代码压缩(JS/CSS/HTML)
+   - 图片压缩和合适的格式选择(WebP/AVIF)
+   - 合理的文件合并策略
+
+2. **缓存策略**
+   - 浏览器缓存(Cache-Control)
+   - Service Worker缓存
+   - CDN缓存
+
+3. **按需加载**
+   - 路由懒加载
+   - 组件动态导入
+   - 图片懒加载
+
+### 2. 渲染优化
+1. **关键渲染路径优化**
+   - CSS放头部，JS放底部
+   - 内联关键CSS
+   - 异步加载非关键资源
+
+2. **减少重排重绘**
+   - 使用transform替代位置改变
+   - 批量DOM操作
+   - 合理使用will-change
+
+3. **虚拟列表**
+   - 长列表分页或虚拟滚动
+   - 避免一次性渲染大量DOM
+
+### 3. 代码层面优化
+1. **JavaScript优化**
+   - 防抖节流
+   - Web Worker处理密集计算
+   - 避免内存泄漏
+
+2. **框架层优化**
+   - 合理的组件拆分
+   - 响应式数据优化
+   - 使用SSR/SSG
+
+### 4. 构建优化
+1. **打包优化**
+   - Tree Shaking
+   - 代码分割(Code Splitting)
+   - 压缩混淆
+
+2. **现代化构建**
+   - ESBuild/SWC加速构建
+   - 并行构建
+   - 增量构建
+
+### 5. 监控与分析
+1. **性能指标监控**
+   - FCP/LCP/TTI等指标 // 首次内容绘制/最大内容绘制/可交互时间
+   - 错误监控
+   - 用户行为分析
+
+2. **持续优化**
+   - 性能预算
+   - CI/CD中的性能检测
+   - A/B测试验证
+
